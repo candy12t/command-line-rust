@@ -15,8 +15,25 @@ pub struct Config {
 pub fn run(config: Config) -> MyResult<()> {
     for filename in config.files {
         match open(&filename) {
-            Err(err) => eprintln!("Failed to open {}: {}", filename, err),
-            Ok(_) => println!("Opened {}", filename),
+            Err(err) => eprintln!("{}: {}", filename, err),
+            Ok(file) => {
+                let mut last_idx = 0;
+                for (idx, line) in file.lines().enumerate() {
+                    let line = line?;
+                    if config.number_lines {
+                        println!("{:6}\t{}", idx + 1, line);
+                    } else if config.number_nonblank_lines {
+                        if line.is_empty() {
+                            println!()
+                        } else {
+                            last_idx += 1;
+                            println!("{:6}\t{}", last_idx, line);
+                        }
+                    } else {
+                        println!("{}", line);
+                    }
+                }
+            }
         }
     }
     Ok(())
